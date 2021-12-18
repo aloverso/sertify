@@ -238,17 +238,7 @@ const Guesser = (): ReactElement => {
                 value={randomCards[0]}
                 onClick={(): void => testSet(randomCards[0])}
               />
-              <div>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={(): void => testSet(randomCards[0])}
-                >
-                  <CheckCircleIcon className="mrs" />
-                  first
-                </Button>
-                <div className="align-center">(press A)</div>
-              </div>
+              <div className="align-center">(press A)</div>
             </div>
             <div className="fdc fac fjc">
               <SetCard
@@ -256,17 +246,7 @@ const Guesser = (): ReactElement => {
                 value={randomCards[1]}
                 onClick={(): void => testSet(randomCards[1])}
               />
-              <div>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={(): void => testSet(randomCards[1])}
-                >
-                  <CheckCircleIcon className="mrs" />
-                  second
-                </Button>
-                <div className="align-center">(press S)</div>
-              </div>
+              <div className="align-center">(press S)</div>
             </div>
             <div className="fdc fac fjc">
               <SetCard
@@ -274,17 +254,7 @@ const Guesser = (): ReactElement => {
                 value={randomCards[2]}
                 onClick={(): void => testSet(randomCards[2])}
               />
-              <div>
-                <Button
-                  variant="contained"
-                  color="tertiary"
-                  onClick={(): void => testSet(randomCards[2])}
-                >
-                  <CheckCircleIcon className="mrs" />
-                  third
-                </Button>
-                <div className="align-center">(press D)</div>
-              </div>
+              <div className="align-center">(press D)</div>
             </div>
           </div>
 
