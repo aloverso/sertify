@@ -75,6 +75,7 @@ const Symbol = (props: SymbolProps): ReactElement => {
 interface Props {
   width: number;
   value: string;
+  onClick?: () => void;
 }
 
 export const SetCard = (props: Props): ReactElement => {
@@ -100,7 +101,11 @@ export const SetCard = (props: Props): ReactElement => {
         borderRadius: margin,
         background: "#fff",
         transition: "width 0.5s, height 0.5s",
+        cursor: props.onClick ? "pointer" : "unset",
       }}
+      onClick={props.onClick}
+      onKeyDown={props.onClick}
+      role={props.onClick ? "button" : undefined}
     >
       {[...Array(number + 1)].map((_, i) => (
         <Symbol

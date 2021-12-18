@@ -3,7 +3,7 @@
 import React, { ReactElement, useCallback, useEffect, useState } from "react";
 import { Button, useMediaQuery } from "@material-ui/core";
 import { MediaQueries } from "../lib/MediaQueries";
-import { checkSet, conjugateCard, generateDeck } from "../lib/set-helpers";
+import { conjugateCard, generateDeck, shuffle } from "../lib/set-helpers";
 import { getCardWidth } from "../lib/layout-helpers";
 import { SetCard } from "../components/SetCard";
 import { Alert } from "@material-ui/lab";
@@ -19,10 +19,12 @@ type PastSet = {
   time: number;
 };
 
-const Index = (): ReactElement => {
+const Guesser = (): ReactElement => {
   const [deck, setDeck] = useState<string[]>(generateDeck());
   const [index, setIndex] = useState<number>(0);
   const [currentCards, setCurrentCards] = useState<string[]>([]);
+  const [randomCards, setRandomCards] = useState<string[]>([]);
+
   const isLarge = useMediaQuery(MediaQueries.desktopAndUp);
   const isXS = useMediaQuery(MediaQueries.isXS);
   const isXXS = useMediaQuery(MediaQueries.isXXS);
@@ -43,6 +45,14 @@ const Index = (): ReactElement => {
     };
   });
 
+  const getRandomCard = useCallback((): string => {
+    const randomIndex = Math.floor(Math.random() * deck.length);
+    if (currentCards.includes(deck[randomIndex]) || randomCards.includes(deck[randomIndex])) {
+      return getRandomCard();
+    }
+    return deck[randomIndex];
+  }, [currentCards, deck]);
+
   const next = useCallback((): void => {
     if (index + 3 < deck.length) {
       setIndex(index + 3);
@@ -53,25 +63,19 @@ const Index = (): ReactElement => {
 
     setTimeout(() => {
       setAlertState("NONE");
-      // document.body.style = 'background-color: #1c2833;';
     }, 500);
   }, [setIndex, setCurrentCards, setAlertState, deck.length, index]);
 
   const testSet = useCallback(
-    (acceptRejectModifier: number): void => {
+    (card: string): void => {
       if (currentCards.length === 0) return;
       setAlertState("NONE");
       const time = stopwatch.getElapsedRunningTime();
       stopwatch.stop();
 
-      if (
-        acceptRejectModifier *
-          (checkSet(currentCards[0], currentCards[1], currentCards[2]) ? 1 : -1) >
-        0
-      ) {
+      if (currentCards[2] === card) {
         setWins(wins + 1);
         setAlertState("SUCCESS");
-        // document.body.style = 'background-color: green;';
         setPastSets((prev) => [
           ...prev,
           {
@@ -85,7 +89,6 @@ const Index = (): ReactElement => {
       } else {
         setLosses(losses + 1);
         setAlertState("FAIL");
-        // document.body.style = 'background-color: #B22222;';
         setPastSets((prev) => [
           ...prev,
           {
@@ -107,31 +110,29 @@ const Index = (): ReactElement => {
     setWins(0);
     setLosses(0);
     setAlertState("NONE");
-    // document.body.style = 'background-color: #1c2833;';
     setIndex(0);
     setPastSets([]);
     setDeck(generateDeck());
   };
 
   useEffect(() => {
-    const shouldBeSet = Math.round(Math.random()) === 0;
-    let thirdCard = conjugateCard(deck[index], deck[index + 1]);
-    if (!shouldBeSet) {
-      thirdCard = deck[index + 2];
-    }
+    const thirdCard = conjugateCard(deck[index], deck[index + 1]);
     setCurrentCards([deck[index], deck[index + 1], thirdCard]);
+    setRandomCards(shuffle([thirdCard, getRandomCard(), getRandomCard()]));
     stopwatch.start();
   }, [index, setCurrentCards, deck]);
 
   const handleKeyDown = useCallback(
     (keyEvent: KeyboardEvent): void => {
       if (keyEvent.code === "KeyA") {
-        testSet(1);
+        testSet(randomCards[0]);
+      } else if (keyEvent.code === "KeyS") {
+        testSet(randomCards[1]);
       } else if (keyEvent.code === "KeyD") {
-        testSet(-1);
+        testSet(randomCards[2]);
       }
     },
-    [testSet]
+    [testSet, randomCards]
   );
 
   useEffect(() => {
@@ -154,39 +155,82 @@ const Index = (): ReactElement => {
   return (
     <div className="container ptm bg pbxl">
       <div className="row mts">
-        <a className="pull-right phs" href="/guesser">
-          guess the third game
+        <a className="pull-right phs" href="/">
+          sertify game
         </a>
       </div>
 
-      <h1 className="text-xl">Sertify</h1>
-      <h2 className="text-m">The game of rapid set-validation</h2>
+      <h1 className="text-xl">Sertify: Guess the Third</h1>
+      <h2 className="text-m">The game of rapid set completion</h2>
       <p>
-        As quickly as possible, go through set cards deciding if each random group of 3 is a set or
-        not.
+        As quickly as possible, given two cards, pick the card from the options that completes the
+        set.
       </p>
       {currentCards.length > 0 && (
         <>
-          <div className="fdr fjc">
+          <div className="fdr fjc fac">
+            Your cards:
             <SetCard width={cardWidth} value={currentCards[0]} />
             <SetCard width={cardWidth} value={currentCards[1]} />
-            <SetCard width={cardWidth} value={currentCards[2]} />
           </div>
 
-          <div className={`${isXS ? "" : "mhxl"} mtl fdr fjc`}>
-            <div className="mrd">
-              <Button variant="contained" color="primary" onClick={(): void => testSet(1)}>
-                <CheckCircleIcon className="mrs" />
-                it's a set
-              </Button>
-              <div className="align-center">(press A)</div>
+          <hr />
+
+          <div className="text-l mls mtd">What's the third?</div>
+          <div className="fdr fjc fac">
+            <div className="fdc fac">
+              <SetCard
+                width={cardWidth}
+                value={randomCards[0]}
+                onClick={(): void => testSet(randomCards[0])}
+              />
+              <div className="mrd">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={(): void => testSet(randomCards[0])}
+                >
+                  <CheckCircleIcon className="mrs" />
+                  this one!
+                </Button>
+                <div className="align-center">(press A)</div>
+              </div>
             </div>
-            <div className="mld">
-              <Button variant="contained" color="secondary" onClick={(): void => testSet(-1)}>
-                <CancelIcon className="mrs" />
-                not a set
-              </Button>
-              <div className="align-center">(press D)</div>
+            <div className="fdc fac">
+              <SetCard
+                width={cardWidth}
+                value={randomCards[1]}
+                onClick={(): void => testSet(randomCards[1])}
+              />
+              <div className="mrd">
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={(): void => testSet(randomCards[1])}
+                >
+                  <CheckCircleIcon className="mrs" />
+                  it's me
+                </Button>
+                <div className="align-center">(press S)</div>
+              </div>
+            </div>
+            <div className="fdc fac">
+              <SetCard
+                width={cardWidth}
+                value={randomCards[2]}
+                onClick={(): void => testSet(randomCards[2])}
+              />
+              <div className="mrd">
+                <Button
+                  variant="contained"
+                  color="tertiary"
+                  onClick={(): void => testSet(randomCards[2])}
+                >
+                  <CheckCircleIcon className="mrs" />
+                  i'm the one
+                </Button>
+                <div className="align-center">(press D)</div>
+              </div>
             </div>
           </div>
 
@@ -241,4 +285,4 @@ const Index = (): ReactElement => {
   );
 };
 
-export default Index;
+export default Guesser;

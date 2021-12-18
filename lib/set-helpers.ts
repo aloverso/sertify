@@ -14,7 +14,7 @@ export const generateDeck = (): string[] => {
   return shuffle(deck);
 };
 
-const shuffle = (deck: string[]): string[] => {
+export const shuffle = (deck: string[]): string[] => {
   for (let i = deck.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     const temp = deck[i];
