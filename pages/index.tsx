@@ -202,8 +202,11 @@ const Index = (): ReactElement => {
         <span className="mrl">
           Current Time: <b>{toSeconds(stopwatch.getElapsedRunningTime())}</b>
         </span>
-        <span>
+        <span className="mrl">
           Average: <b>{toSeconds(getAverage())}</b>
+        </span>
+        <span className="mrl">
+          Total time: <b>{toSeconds(pastSets.reduce((acc, cur) => acc + cur.time, 0))}</b>
         </span>
       </div>
 
