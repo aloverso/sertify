@@ -100,7 +100,7 @@ export const SetCard = (props: Props): ReactElement => {
         height: contentHeight,
         margin: margin,
         borderRadius: margin,
-        background: props.blank ? "#47515A" : "#fff",
+        background: props.blank ? "#3D4751" : "#fff",
         transition: "width 0.5s, height 0.5s",
         cursor: props.onClick ? "pointer" : "unset",
       }}
