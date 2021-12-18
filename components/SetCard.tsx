@@ -103,9 +103,10 @@ export const SetCard = (props: Props): ReactElement => {
         height: contentHeight,
         margin: margin,
         borderRadius: margin,
-        background: props.blank ? "#38424a" : "#fff",
+        background: props.blank ? "rgba(255,255,255,0.1)" : "#fff",
         transition: "width 0.5s, height 0.5s",
         cursor: props.onClick ? "pointer" : "unset",
+        border: "none",
       }}
       onClick={props.onClick}
       onKeyDown={props.onClick}

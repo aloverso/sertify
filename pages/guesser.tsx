@@ -211,6 +211,11 @@ const Guesser = (): ReactElement => {
           <Switch
             checked={hardMode}
             onChange={(): void => {
+              if (hardMode === false) {
+                document.body.style = "background-color: #331c1c;";
+              } else {
+                document.body.style = "background-color: #1c2833;";
+              }
               setHardMode(!hardMode);
               playAgain();
             }}
@@ -267,13 +272,13 @@ const Guesser = (): ReactElement => {
       )}
 
       <div className="mtd fdr">
-        <div className="col-xs-4">
+        <div className="col-xs-4 align-center">
           Current: <b>{toSeconds(stopwatch.getElapsedRunningTime())}</b>
         </div>
-        <div className="col-xs-4">
+        <div className="col-xs-4 align-center">
           Average: <b>{toSeconds(getAverage())}</b>
         </div>
-        <div className="col-xs-4">
+        <div className="col-xs-4 align-center">
           Total time: <b>{toSeconds(pastSets.reduce((acc, cur) => acc + cur.time, 0))}</b>
         </div>
       </div>
