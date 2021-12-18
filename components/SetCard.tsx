@@ -1,6 +1,8 @@
 import React, { ReactElement } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
+import { useMediaQuery } from "@material-ui/core";
+import { MediaQueries } from "../lib/MediaQueries";
 
 const useStyles = makeStyles((theme) => ({
   symbol: {
@@ -81,6 +83,7 @@ interface Props {
 
 export const SetCard = (props: Props): ReactElement => {
   const classes = useStyles();
+  const isXXS = useMediaQuery(MediaQueries.isXXS);
 
   const height = Math.round(props.width / 1.6);
   const margin = Math.round(props.width * 0.035);
@@ -100,7 +103,7 @@ export const SetCard = (props: Props): ReactElement => {
         height: contentHeight,
         margin: margin,
         borderRadius: margin,
-        background: props.blank ? "#3D4751" : "#fff",
+        background: props.blank ? "#38424a" : "#fff",
         transition: "width 0.5s, height 0.5s",
         cursor: props.onClick ? "pointer" : "unset",
       }}
@@ -109,7 +112,9 @@ export const SetCard = (props: Props): ReactElement => {
       role={props.onClick ? "button" : undefined}
     >
       {props.blank && (
-        <div style={{ color: "#8E9499", fontWeight: "bold", fontSize: "3rem" }}>?</div>
+        <div style={{ color: "#8E9499", fontWeight: "bold", fontSize: isXXS ? "3rem" : "5rem" }}>
+          ?
+        </div>
       )}
       {!props.blank &&
         [...Array(number + 1)].map((_, i) => (
