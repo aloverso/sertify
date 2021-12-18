@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
 import React, { ReactElement, useCallback, useEffect, useState } from "react";
-import { Button, useMediaQuery } from "@material-ui/core";
+import { Button, FormControlLabel, Switch, useMediaQuery } from "@material-ui/core";
 import { MediaQueries } from "../lib/MediaQueries";
 import { conjugateCard, generateDeck, shuffle } from "../lib/set-helpers";
 import { getCardWidth } from "../lib/layout-helpers";
@@ -33,6 +33,7 @@ const Guesser = (): ReactElement => {
   const [alertState, setAlertState] = useState<"NONE" | "SUCCESS" | "FAIL">("NONE");
   const [, setRenderTime] = React.useState(new Date().getTime());
   const [pastSets, setPastSets] = useState<PastSet[]>([]);
+  const [hardMode, setHardMode] = useState<boolean>(false);
 
   const stopwatch = useStopwatch();
 
@@ -45,13 +46,50 @@ const Guesser = (): ReactElement => {
     };
   });
 
-  const getRandomCard = useCallback((): string => {
-    const randomIndex = Math.floor(Math.random() * deck.length);
-    if (currentCards.includes(deck[randomIndex]) || randomCards.includes(deck[randomIndex])) {
-      return getRandomCard();
-    }
-    return deck[randomIndex];
-  }, [currentCards, deck]);
+  const replaceAt = (str: string, index: number, replacement: string): string => {
+    return str.substr(0, index) + replacement + str.substr(index + replacement.length);
+  };
+
+  const getRandomCardHardMode = useCallback(
+    (thirdCard: string, existing?: string): string => {
+      const randomProperty = Math.floor(Math.random() * 4);
+      const randomUpOrDown = Math.round(Math.random()) ? -1 : 0;
+
+      let newChar = parseInt(thirdCard.charAt(randomProperty)) + randomUpOrDown;
+      if (newChar < 0) newChar = 2;
+      if (newChar > 2) newChar = 0;
+      const newCard = replaceAt(thirdCard, randomProperty, newChar + "");
+
+      if (
+        currentCards.includes(newCard) ||
+        newCard === thirdCard ||
+        (existing && existing === newCard)
+      ) {
+        return getRandomCardHardMode(thirdCard, existing);
+      }
+      setRandomCards((prev) => [...prev, newCard]);
+      return newCard;
+    },
+    [currentCards, deck]
+  );
+
+  const getRandomCard = useCallback(
+    (thirdCard: string, existing?: string): string => {
+      if (hardMode) {
+        return getRandomCardHardMode(thirdCard, existing);
+      }
+
+      const randomIndex = Math.floor(Math.random() * deck.length);
+      if (
+        currentCards.includes(deck[randomIndex]) ||
+        (existing && existing === deck[randomIndex])
+      ) {
+        return getRandomCard(thirdCard, existing);
+      }
+      return deck[randomIndex];
+    },
+    [currentCards, deck]
+  );
 
   const next = useCallback((): void => {
     if (index + 3 < deck.length) {
@@ -118,7 +156,9 @@ const Guesser = (): ReactElement => {
   useEffect(() => {
     const thirdCard = conjugateCard(deck[index], deck[index + 1]);
     setCurrentCards([deck[index], deck[index + 1], thirdCard]);
-    setRandomCards(shuffle([thirdCard, getRandomCard(), getRandomCard()]));
+    const card1 = getRandomCard(thirdCard);
+    const card2 = getRandomCard(thirdCard, card1);
+    setRandomCards(shuffle([thirdCard, card1, card2]));
     stopwatch.start();
   }, [index, setCurrentCards, deck]);
 
@@ -166,6 +206,20 @@ const Guesser = (): ReactElement => {
         As quickly as possible, given two cards, pick the card from the options that completes the
         set.
       </p>
+      <FormControlLabel
+        control={
+          <Switch
+            checked={hardMode}
+            onChange={(): void => {
+              setHardMode(!hardMode);
+              playAgain();
+            }}
+            name="hardMode"
+          />
+        }
+        label="Hard mode (makes the options more similar)"
+      />
+
       {currentCards.length > 0 && (
         <>
           <div className="fdr fjc fac">
