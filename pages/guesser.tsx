@@ -232,56 +232,56 @@ const Guesser = (): ReactElement => {
 
           <div className="text-l mls mtd">What's the third?</div>
           <div className="fdr fjc fac">
-            <div className="fdc fac">
+            <div className="fdc fac fjc">
               <SetCard
                 width={cardWidth}
                 value={randomCards[0]}
                 onClick={(): void => testSet(randomCards[0])}
               />
-              <div className="mrd">
+              <div>
                 <Button
                   variant="contained"
                   color="primary"
                   onClick={(): void => testSet(randomCards[0])}
                 >
                   <CheckCircleIcon className="mrs" />
-                  this one!
+                  first
                 </Button>
                 <div className="align-center">(press A)</div>
               </div>
             </div>
-            <div className="fdc fac">
+            <div className="fdc fac fjc">
               <SetCard
                 width={cardWidth}
                 value={randomCards[1]}
                 onClick={(): void => testSet(randomCards[1])}
               />
-              <div className="mrd">
+              <div>
                 <Button
                   variant="contained"
                   color="secondary"
                   onClick={(): void => testSet(randomCards[1])}
                 >
                   <CheckCircleIcon className="mrs" />
-                  it's me
+                  second
                 </Button>
                 <div className="align-center">(press S)</div>
               </div>
             </div>
-            <div className="fdc fac">
+            <div className="fdc fac fjc">
               <SetCard
                 width={cardWidth}
                 value={randomCards[2]}
                 onClick={(): void => testSet(randomCards[2])}
               />
-              <div className="mrd">
+              <div>
                 <Button
                   variant="contained"
                   color="tertiary"
                   onClick={(): void => testSet(randomCards[2])}
                 >
                   <CheckCircleIcon className="mrs" />
-                  i'm the one
+                  third
                 </Button>
                 <div className="align-center">(press D)</div>
               </div>
