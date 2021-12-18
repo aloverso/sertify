@@ -230,7 +230,7 @@ const Guesser = (): ReactElement => {
 
           <hr />
 
-          <div className="text-l mls mtd">What's the third?</div>
+          <div className="text-l mtd">What's the third?</div>
           <div className="fdr fjc fac">
             <div className="fdc fac fjc">
               <SetCard
