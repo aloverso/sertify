@@ -194,7 +194,7 @@ const Index = (): ReactElement => {
               backgroundColor: it.result === "SUCCESS" ? 'green' : '#B22222',
             }}
           >
-            <div className="mts">{it.result === "SUCCESS" ? <CheckCircleIcon /> : <CancelIcon />}</div>
+            <div className="mts mrxs">{it.result === "SUCCESS" ? <CheckCircleIcon /> : <CancelIcon />}</div>
             <div >{toSeconds(it.time)}</div>
           </div>
         ))}
