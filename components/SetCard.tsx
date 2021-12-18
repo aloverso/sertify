@@ -76,6 +76,7 @@ interface Props {
   width: number;
   value: string;
   onClick?: () => void;
+  blank?: boolean;
 }
 
 export const SetCard = (props: Props): ReactElement => {
@@ -99,7 +100,7 @@ export const SetCard = (props: Props): ReactElement => {
         height: contentHeight,
         margin: margin,
         borderRadius: margin,
-        background: "#fff",
+        background: props.blank ? "#47515A" : "#fff",
         transition: "width 0.5s, height 0.5s",
         cursor: props.onClick ? "pointer" : "unset",
       }}
@@ -107,15 +108,19 @@ export const SetCard = (props: Props): ReactElement => {
       onKeyDown={props.onClick}
       role={props.onClick ? "button" : undefined}
     >
-      {[...Array(number + 1)].map((_, i) => (
-        <Symbol
-          key={i}
-          color={color}
-          shape={shape}
-          shade={shade}
-          size={Math.round(contentHeight * 0.36)}
-        />
-      ))}
+      {props.blank && (
+        <div style={{ color: "#8E9499", fontWeight: "bold", fontSize: "3rem" }}>?</div>
+      )}
+      {!props.blank &&
+        [...Array(number + 1)].map((_, i) => (
+          <Symbol
+            key={i}
+            color={color}
+            shape={shape}
+            shade={shade}
+            size={Math.round(contentHeight * 0.36)}
+          />
+        ))}
     </div>
   );
 };

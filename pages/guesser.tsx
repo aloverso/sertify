@@ -223,9 +223,9 @@ const Guesser = (): ReactElement => {
       {currentCards.length > 0 && (
         <>
           <div className="fdr fjc fac">
-            Your cards:
             <SetCard width={cardWidth} value={currentCards[0]} />
             <SetCard width={cardWidth} value={currentCards[1]} />
+            <SetCard width={cardWidth} value={currentCards[1]} blank={true} />
           </div>
 
           <hr />
