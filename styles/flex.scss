@@ -9,6 +9,10 @@
   flex-direction: row;
 }
 
+.dr {
+  flex-direction: row;
+}
+
 .fdc {
   display: flex;
   flex-direction: column;
@@ -60,4 +64,8 @@
 
 .vam {
   vertical-align: middle;
+}
+
+.fww {
+  flex-wrap: wrap;
 }

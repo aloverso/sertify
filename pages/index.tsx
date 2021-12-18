@@ -7,14 +7,16 @@ import { SetCard } from "../components/SetCard";
 import { Alert } from "@material-ui/lab";
 import CancelIcon from "@material-ui/icons/Cancel";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
+import { useStopwatch } from "react-use-precision-timer";
 
-// type PastSet = {
-//   cardA: string;
-//   cardB: string;
-//   cardC: string;
-//   result: 'SUCCESS' | 'FAIL';
-//   time: number;
-// }
+
+type PastSet = {
+  cardA: string;
+  cardB: string;
+  cardC: string;
+  result: 'SUCCESS' | 'FAIL';
+  time: number;
+}
 
 const Index = (): ReactElement => {
   const [deck, setDeck] = useState<string[]>(generateDeck());
@@ -26,49 +28,64 @@ const Index = (): ReactElement => {
   const [wins, setWins] = useState<number>(0);
   const [losses, setLosses] = useState<number>(0);
   const [alertState, setAlertState] = useState<"NONE" | "SUCCESS" | "FAIL">("NONE");
-  // const [pastSets, setPastSets] = useState<PastSet[]>([])
+  const [renderTime, setRenderTime] = React.useState(new Date().getTime());
+  const [pastSets, setPastSets] = useState<PastSet[]>([])
+
+  const stopwatch = useStopwatch();
 
   const cardWidth = getCardWidth(isLarge, isXS, isXXS);
+
+  React.useEffect(() => {
+    const timeout = setTimeout(() => setRenderTime(new Date().getTime()), 50);
+    return () => {
+      clearTimeout(timeout);
+    };
+  });
 
   const next = useCallback((): void => {
     if (index + 3 < deck.length) {
       setIndex(index + 3);
+      stopwatch.start()
     } else {
       setCurrentCards([]);
     }
 
     setTimeout(() => {
       setAlertState("NONE");
+      // document.body.style = 'background-color: #1c2833;';
     }, 500);
   }, [setIndex, setCurrentCards, setAlertState, deck.length, index]);
 
-  const testAccept = useCallback((): void => {
+  const testSet = useCallback((acceptRejectModifier: number): void => {
     if (currentCards.length === 0) return;
     setAlertState("NONE");
+    const time = stopwatch.getElapsedRunningTime()
+    stopwatch.stop()
 
-    if (checkSet(currentCards[0], currentCards[1], currentCards[2])) {
+    if (acceptRejectModifier * (checkSet(currentCards[0], currentCards[1], currentCards[2]) ? 1 : -1) > 0) {
       setWins(wins + 1);
       setAlertState("SUCCESS");
+      // document.body.style = 'background-color: green;';
+      setPastSets([...pastSets, {
+        cardA: currentCards[0],
+        cardB: currentCards[1],
+        cardC: currentCards[2],
+        result: 'SUCCESS',
+        time: time
+      }])
     } else {
       setLosses(losses + 1);
       setAlertState("FAIL");
+      // document.body.style = 'background-color: #B22222;';
+      setPastSets([...pastSets, {
+        cardA: currentCards[0],
+        cardB: currentCards[1],
+        cardC: currentCards[2],
+        result: 'FAIL',
+        time: time
+      }])
     }
 
-    next();
-  }, [currentCards, setAlertState, setWins, setLosses, next, losses, wins]);
-
-  const testReject = useCallback((): void => {
-    if (currentCards.length === 0) return;
-
-    setAlertState("NONE");
-
-    if (!checkSet(currentCards[0], currentCards[1], currentCards[2])) {
-      setWins(wins + 1);
-      setAlertState("SUCCESS");
-    } else {
-      setLosses(losses + 1);
-      setAlertState("FAIL");
-    }
     next();
   }, [currentCards, setAlertState, setWins, setLosses, next, losses, wins]);
 
@@ -76,7 +93,9 @@ const Index = (): ReactElement => {
     setWins(0);
     setLosses(0);
     setAlertState("NONE");
+    // document.body.style = 'background-color: #1c2833;';
     setIndex(0);
+    setPastSets([]);
     setDeck(generateDeck());
   };
 
@@ -87,17 +106,18 @@ const Index = (): ReactElement => {
       thirdCard = deck[index + 2];
     }
     setCurrentCards([deck[index], deck[index + 1], thirdCard]);
+    stopwatch.start();
   }, [index, setCurrentCards, deck]);
 
   const handleKeyDown = useCallback(
     (keyEvent: KeyboardEvent): void => {
       if (keyEvent.code === "KeyA") {
-        testAccept();
+        testSet(1);
       } else if (keyEvent.code === "KeyD") {
-        testReject();
+        testSet(-1);
       }
     },
-    [testAccept, testReject]
+    [testSet]
   );
 
   useEffect(() => {
@@ -107,8 +127,18 @@ const Index = (): ReactElement => {
     };
   }, [handleKeyDown]);
 
+  const getAverage = (): number => {
+    if (pastSets.length === 0) return 0;
+    const totalTime = pastSets.reduce((acc, cur) => acc + cur.time, 0)
+    return totalTime / pastSets.length;
+  }
+
+  const toSeconds = (num: number): string => {
+    return `${(num / 1000).toFixed(2)}s`
+  }
+
   return (
-    <div className="container ptm">
+    <div className="container ptm bg">
       <h1 className="text-xl">Sertify</h1>
       <h2 className="text-m">The game of rapid set-validation</h2>
       <p>
@@ -125,14 +155,14 @@ const Index = (): ReactElement => {
 
           <div className={`${isXS ? "" : "mhxl"} mtl fdr fjc`}>
             <div className="mrd">
-              <Button variant="contained" color="primary" onClick={testAccept}>
+              <Button variant="contained" color="primary" onClick={() => testSet(1)}>
                 <CheckCircleIcon className="mrs" />
                 it's a set
               </Button>
               <div className="align-center">(press A)</div>
             </div>
             <div className="mld">
-              <Button variant="contained" color="secondary" onClick={testReject}>
+              <Button variant="contained" color="secondary" onClick={() => testSet(-1)}>
                 <CancelIcon className="mrs" />
                 not a set
               </Button>
@@ -147,6 +177,28 @@ const Index = (): ReactElement => {
           </div>
         </>
       )}
+
+      <div className="mtd">
+        <span className="mrl">Current Time: <b>{toSeconds(stopwatch.getElapsedRunningTime())}</b></span>
+        <span>Average: <b>{toSeconds(getAverage())}</b></span>
+      </div>
+
+      <div className="fdr fww">
+        {pastSets.map((it) => (
+          <div
+            key={it.cardA + it.cardB + it.cardC}
+            className="fdr fac fjc mts mrs prd"
+            style={{
+              borderRadius: '1rem',
+              height: '1.5rem',
+              backgroundColor: it.result === "SUCCESS" ? 'green' : '#B22222',
+            }}
+          >
+            <div className="mts">{it.result === "SUCCESS" ? <CheckCircleIcon /> : <CancelIcon />}</div>
+            <div >{toSeconds(it.time)}</div>
+          </div>
+        ))}
+      </div>
 
       <div className="align-center mtl">
         <div className="text-l">Wins: {wins}</div>
