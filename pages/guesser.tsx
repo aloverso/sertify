@@ -217,7 +217,7 @@ const Guesser = (): ReactElement => {
             name="hardMode"
           />
         }
-        label="Hard mode (makes the options more similar)"
+        label="Hard mode (options are more similar)"
       />
 
       {currentCards.length > 0 && (
@@ -266,16 +266,16 @@ const Guesser = (): ReactElement => {
         </>
       )}
 
-      <div className="mtd">
-        <span className="mrl">
-          Current Time: <b>{toSeconds(stopwatch.getElapsedRunningTime())}</b>
-        </span>
-        <span className="mrl">
+      <div className="mtd fdr">
+        <div className="col-xs-4">
+          Current: <b>{toSeconds(stopwatch.getElapsedRunningTime())}</b>
+        </div>
+        <div className="col-xs-4">
           Average: <b>{toSeconds(getAverage())}</b>
-        </span>
-        <span className="mrl">
+        </div>
+        <div className="col-xs-4">
           Total time: <b>{toSeconds(pastSets.reduce((acc, cur) => acc + cur.time, 0))}</b>
-        </span>
+        </div>
       </div>
 
       <div className="fdr fww">
