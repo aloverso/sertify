@@ -4,7 +4,7 @@ import { Button } from "@material-ui/core";
 interface Props {
   wins: number;
   losses: number;
-  currentCards: string[];
+  showPlayAgain: boolean;
   playAgainCallback: () => void;
 }
 
@@ -13,7 +13,7 @@ export const Score = (props: Props): ReactElement => {
     <div className="align-center mtl">
       <div className="text-l">Wins: {props.wins}</div>
       <div className="text-l">Losses: {props.losses}</div>
-      {props.currentCards.length === 0 && (
+      {props.showPlayAgain && (
         <div className="mtl">
           <Button onClick={props.playAgainCallback} variant="contained" color="primary">
             Play again

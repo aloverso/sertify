@@ -14,6 +14,7 @@ import { PastSetsPills } from "../components/PastSetsPills";
 import { Score } from "../components/Score";
 import { SolutionAlert } from "../components/SolutionAlert";
 import { HardModeToggle } from "../components/HardModeToggle";
+import {StartPlayingButton} from "../components/StartPlayingButton";
 
 const Guesser = (): ReactElement => {
   const [deck, setDeck] = useState<string[]>(generateDeck());
@@ -30,6 +31,7 @@ const Guesser = (): ReactElement => {
   const [, setRenderTime] = React.useState(new Date().getTime());
   const [pastSets, setPastSets] = useState<PastSet[]>([]);
   const [hardMode, setHardMode] = useState<boolean>(false);
+  const [started, setStarted] = useState<boolean>(false);
 
   const stopwatch = useStopwatch();
 
@@ -151,8 +153,12 @@ const Guesser = (): ReactElement => {
     const card1 = getRandomCard(thirdCard);
     const card2 = getRandomCard(thirdCard, card1);
     setRandomCards(shuffle([thirdCard, card1, card2]));
-    stopwatch.start();
   }, [index, setCurrentCards, deck]);
+
+  const startGame = (): void => {
+    setStarted(true)
+    stopwatch.start();
+  }
 
   const handleKeyDown = useCallback(
     (keyEvent: KeyboardEvent): void => {
@@ -193,9 +199,9 @@ const Guesser = (): ReactElement => {
       {currentCards.length > 0 && (
         <>
           <div className="fdr fjc fac">
-            <SetCard width={cardWidth} value={currentCards[0]} />
-            <SetCard width={cardWidth} value={currentCards[1]} />
-            <SetCard width={cardWidth} value={currentCards[1]} blank={true} />
+            <SetCard width={cardWidth} value={currentCards[0]} blank={!started ? '1' : undefined}/>
+            <SetCard width={cardWidth} value={currentCards[1]} blank={!started ? '2' : undefined}/>
+            <SetCard width={cardWidth} value={currentCards[1]} blank={'?'} />
           </div>
 
           <hr />
@@ -206,7 +212,8 @@ const Guesser = (): ReactElement => {
               <SetCard
                 width={cardWidth}
                 value={randomCards[0]}
-                onClick={(): void => testSet(randomCards[0])}
+                onClick={(): void => started ? testSet(randomCards[0]) : undefined}
+                blank={!started ? 'A' : undefined}
               />
               <div className="align-center">(press A)</div>
             </div>
@@ -214,7 +221,8 @@ const Guesser = (): ReactElement => {
               <SetCard
                 width={cardWidth}
                 value={randomCards[1]}
-                onClick={(): void => testSet(randomCards[1])}
+                onClick={(): void => started ? testSet(randomCards[1]) : undefined}
+                blank={!started ? 'S' : undefined}
               />
               <div className="align-center">(press S)</div>
             </div>
@@ -222,11 +230,14 @@ const Guesser = (): ReactElement => {
               <SetCard
                 width={cardWidth}
                 value={randomCards[2]}
-                onClick={(): void => testSet(randomCards[2])}
+                onClick={(): void => started ? testSet(randomCards[2]) : undefined}
+                blank={!started ? 'D' : undefined}
               />
               <div className="align-center">(press D)</div>
             </div>
           </div>
+
+          <StartPlayingButton started={started} startGameCallback={startGame}/>
 
           <SolutionAlert alertState={alertState} />
         </>
@@ -235,7 +246,7 @@ const Guesser = (): ReactElement => {
       <TimerRow pastSets={pastSets} stopwatch={stopwatch} />
       <PastSetsPills pastSets={pastSets} />
       <Score
-        currentCards={currentCards}
+        showPlayAgain={started && currentCards.length === 0}
         wins={wins}
         losses={losses}
         playAgainCallback={playAgain}

@@ -112,3 +112,8 @@ tr {
     height: 2.5rem;
   }
 }
+
+.MuiButton-contained.Mui-disabled {
+  background-color: rgba(255,255,255,0.1) !important;
+  color: #8E9499 !important;
+}

@@ -13,14 +13,8 @@ import { TimerRow } from "../components/TimerRow";
 import { PastSetsPills } from "../components/PastSetsPills";
 import { SolutionAlert } from "../components/SolutionAlert";
 import { Score } from "../components/Score";
-
-type PastSet = {
-  cardA: string;
-  cardB: string;
-  cardC: string;
-  result: "SUCCESS" | "FAIL";
-  time: number;
-};
+import {PastSet} from "../lib/types";
+import {StartPlayingButton} from "../components/StartPlayingButton";
 
 const Index = (): ReactElement => {
   const [deck, setDeck] = useState<string[]>(generateDeck());
@@ -34,6 +28,7 @@ const Index = (): ReactElement => {
   const [alertState, setAlertState] = useState<"NONE" | "SUCCESS" | "FAIL">("NONE");
   const [, setRenderTime] = React.useState(new Date().getTime());
   const [pastSets, setPastSets] = useState<PastSet[]>([]);
+  const [started, setStarted] = useState<boolean>(false);
 
   const stopwatch = useStopwatch();
 
@@ -123,8 +118,12 @@ const Index = (): ReactElement => {
       thirdCard = deck[index + 2];
     }
     setCurrentCards([deck[index], deck[index + 1], thirdCard]);
-    stopwatch.start();
   }, [index, setCurrentCards, deck]);
+
+  const startGame = (): void => {
+    setStarted(true)
+    stopwatch.start();
+  }
 
   const handleKeyDown = useCallback(
     (keyEvent: KeyboardEvent): void => {
@@ -158,30 +157,33 @@ const Index = (): ReactElement => {
         As quickly as possible, go through set cards deciding if each random group of 3 is a set or
         not.
       </p>
+
       {currentCards.length > 0 && (
         <>
           <div className="fdr fjc">
-            <SetCard width={cardWidth} value={currentCards[0]} />
-            <SetCard width={cardWidth} value={currentCards[1]} />
-            <SetCard width={cardWidth} value={currentCards[2]} />
+            <SetCard width={cardWidth} value={currentCards[0]} blank={!started ? 'A' : undefined}/>
+            <SetCard width={cardWidth} value={currentCards[1]} blank={!started ? 'B' : undefined}/>
+            <SetCard width={cardWidth} value={currentCards[2]} blank={!started ? 'C' : undefined}/>
           </div>
 
           <div className={`${isXS ? "" : "mhxl"} mtl fdr fjc`}>
             <div className="mrd">
-              <Button variant="contained" color="primary" onClick={(): void => testSet(1)}>
+              <Button disabled={!started} variant="contained" color="primary" onClick={(): void => testSet(1)}>
                 <CheckCircleIcon className="mrs" />
                 it's a set
               </Button>
               <div className="align-center">(press A)</div>
             </div>
             <div className="mld">
-              <Button variant="contained" color="secondary" onClick={(): void => testSet(-1)}>
+              <Button disabled={!started} variant="contained" color="secondary" onClick={(): void => testSet(-1)}>
                 <CancelIcon className="mrs" />
                 not a set
               </Button>
               <div className="align-center">(press D)</div>
             </div>
           </div>
+
+          <StartPlayingButton started={started} startGameCallback={startGame}/>
 
           <SolutionAlert alertState={alertState} />
         </>
@@ -190,7 +192,7 @@ const Index = (): ReactElement => {
       <TimerRow pastSets={pastSets} stopwatch={stopwatch} />
       <PastSetsPills pastSets={pastSets} />
       <Score
-        currentCards={currentCards}
+        showPlayAgain={started && currentCards.length === 0}
         wins={wins}
         losses={losses}
         playAgainCallback={playAgain}

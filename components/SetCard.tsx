@@ -78,7 +78,7 @@ interface Props {
   width: number;
   value: string;
   onClick?: () => void;
-  blank?: boolean;
+  blank?: string;
 }
 
 export const SetCard = (props: Props): ReactElement => {
@@ -114,7 +114,7 @@ export const SetCard = (props: Props): ReactElement => {
     >
       {props.blank && (
         <div style={{ color: "#8E9499", fontWeight: "bold", fontSize: isXXS ? "3rem" : "5rem" }}>
-          ?
+          {props.blank}
         </div>
       )}
       {!props.blank &&
