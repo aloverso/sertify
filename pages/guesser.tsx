@@ -1,23 +1,19 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
 import React, { ReactElement, useCallback, useEffect, useState } from "react";
-import { Button, FormControlLabel, Switch, useMediaQuery } from "@material-ui/core";
+import { useMediaQuery } from "@material-ui/core";
 import { MediaQueries } from "../lib/MediaQueries";
 import { conjugateCard, generateDeck, shuffle } from "../lib/set-helpers";
 import { getCardWidth } from "../lib/layout-helpers";
 import { SetCard } from "../components/SetCard";
-import { Alert } from "@material-ui/lab";
-import CancelIcon from "@material-ui/icons/Cancel";
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import { useStopwatch } from "react-use-precision-timer";
-
-type PastSet = {
-  cardA: string;
-  cardB: string;
-  cardC: string;
-  result: "SUCCESS" | "FAIL";
-  time: number;
-};
+import { TimerRow } from "../components/TimerRow";
+import { AlertState, PastSet } from "../lib/types";
+import { replaceAt } from "../lib/utils";
+import { PastSetsPills } from "../components/PastSetsPills";
+import { Score } from "../components/Score";
+import { SolutionAlert } from "../components/SolutionAlert";
+import { HardModeToggle } from "../components/HardModeToggle";
 
 const Guesser = (): ReactElement => {
   const [deck, setDeck] = useState<string[]>(generateDeck());
@@ -30,7 +26,7 @@ const Guesser = (): ReactElement => {
   const isXXS = useMediaQuery(MediaQueries.isXXS);
   const [wins, setWins] = useState<number>(0);
   const [losses, setLosses] = useState<number>(0);
-  const [alertState, setAlertState] = useState<"NONE" | "SUCCESS" | "FAIL">("NONE");
+  const [alertState, setAlertState] = useState<AlertState>("NONE");
   const [, setRenderTime] = React.useState(new Date().getTime());
   const [pastSets, setPastSets] = useState<PastSet[]>([]);
   const [hardMode, setHardMode] = useState<boolean>(false);
@@ -45,10 +41,6 @@ const Guesser = (): ReactElement => {
       clearTimeout(timeout);
     };
   });
-
-  const replaceAt = (str: string, index: number, replacement: string): string => {
-    return str.substr(0, index) + replacement + str.substr(index + replacement.length);
-  };
 
   const getRandomCardHardMode = useCallback(
     (thirdCard: string, existing?: string): string => {
@@ -182,16 +174,6 @@ const Guesser = (): ReactElement => {
     };
   }, [handleKeyDown]);
 
-  const getAverage = (): number => {
-    if (pastSets.length === 0) return 0;
-    const totalTime = pastSets.reduce((acc, cur) => acc + cur.time, 0);
-    return totalTime / pastSets.length;
-  };
-
-  const toSeconds = (num: number): string => {
-    return `${(num / 1000).toFixed(2)}s`;
-  };
-
   return (
     <div className="container ptm bg pbxl">
       <div className="row mts">
@@ -206,24 +188,7 @@ const Guesser = (): ReactElement => {
         As quickly as possible, given two cards, pick the card from the options that completes the
         set.
       </p>
-      <FormControlLabel
-        control={
-          <Switch
-            checked={hardMode}
-            onChange={(): void => {
-              if (hardMode === false) {
-                document.body.style = "background-color: #331c1c;";
-              } else {
-                document.body.style = "background-color: #1c2833;";
-              }
-              setHardMode(!hardMode);
-              playAgain();
-            }}
-            name="hardMode"
-          />
-        }
-        label="Hard mode (options are more similar)"
-      />
+      <HardModeToggle hardMode={hardMode} setHardMode={setHardMode} resetCallback={playAgain} />
 
       {currentCards.length > 0 && (
         <>
@@ -263,56 +228,18 @@ const Guesser = (): ReactElement => {
             </div>
           </div>
 
-          <div className="ptd" style={{ visibility: alertState === "NONE" ? "hidden" : "visible" }}>
-            <Alert severity={alertState === "SUCCESS" ? "success" : "error"} variant="filled">
-              {alertState === "SUCCESS" ? "Correct!" : "Wrong!"}
-            </Alert>
-          </div>
+          <SolutionAlert alertState={alertState} />
         </>
       )}
 
-      <div className="mtd fdr">
-        <div className="col-xs-4 align-center">
-          Current: <b>{toSeconds(stopwatch.getElapsedRunningTime())}</b>
-        </div>
-        <div className="col-xs-4 align-center">
-          Average: <b>{toSeconds(getAverage())}</b>
-        </div>
-        <div className="col-xs-4 align-center">
-          Total time: <b>{toSeconds(pastSets.reduce((acc, cur) => acc + cur.time, 0))}</b>
-        </div>
-      </div>
-
-      <div className="fdr fww">
-        {pastSets.map((it) => (
-          <div
-            key={it.cardA + it.cardB + it.cardC}
-            className="fdr fac fjc mts mrs prd"
-            style={{
-              borderRadius: "1rem",
-              height: "1.5rem",
-              backgroundColor: it.result === "SUCCESS" ? "green" : "#B22222",
-            }}
-          >
-            <div className="mts mrxs">
-              {it.result === "SUCCESS" ? <CheckCircleIcon /> : <CancelIcon />}
-            </div>
-            <div>{toSeconds(it.time)}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="align-center mtl">
-        <div className="text-l">Wins: {wins}</div>
-        <div className="text-l">Losses: {losses}</div>
-        {currentCards.length === 0 && (
-          <div className="mtl">
-            <Button onClick={playAgain} variant="contained" color="primary">
-              Play again
-            </Button>
-          </div>
-        )}
-      </div>
+      <TimerRow pastSets={pastSets} stopwatch={stopwatch} />
+      <PastSetsPills pastSets={pastSets} />
+      <Score
+        currentCards={currentCards}
+        wins={wins}
+        losses={losses}
+        playAgainCallback={playAgain}
+      />
     </div>
   );
 };

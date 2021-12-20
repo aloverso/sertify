@@ -6,10 +6,13 @@ import { MediaQueries } from "../lib/MediaQueries";
 import { checkSet, conjugateCard, generateDeck } from "../lib/set-helpers";
 import { getCardWidth } from "../lib/layout-helpers";
 import { SetCard } from "../components/SetCard";
-import { Alert } from "@material-ui/lab";
 import CancelIcon from "@material-ui/icons/Cancel";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import { useStopwatch } from "react-use-precision-timer";
+import { TimerRow } from "../components/TimerRow";
+import { PastSetsPills } from "../components/PastSetsPills";
+import { SolutionAlert } from "../components/SolutionAlert";
+import { Score } from "../components/Score";
 
 type PastSet = {
   cardA: string;
@@ -141,16 +144,6 @@ const Index = (): ReactElement => {
     };
   }, [handleKeyDown]);
 
-  const getAverage = (): number => {
-    if (pastSets.length === 0) return 0;
-    const totalTime = pastSets.reduce((acc, cur) => acc + cur.time, 0);
-    return totalTime / pastSets.length;
-  };
-
-  const toSeconds = (num: number): string => {
-    return `${(num / 1000).toFixed(2)}s`;
-  };
-
   return (
     <div className="container ptm bg pbxl">
       <div className="row mts">
@@ -190,56 +183,18 @@ const Index = (): ReactElement => {
             </div>
           </div>
 
-          <div className="ptd" style={{ visibility: alertState === "NONE" ? "hidden" : "visible" }}>
-            <Alert severity={alertState === "SUCCESS" ? "success" : "error"} variant="filled">
-              {alertState === "SUCCESS" ? "Correct!" : "Wrong!"}
-            </Alert>
-          </div>
+          <SolutionAlert alertState={alertState} />
         </>
       )}
 
-      <div className="mtd">
-        <span className="mrl">
-          Current Time: <b>{toSeconds(stopwatch.getElapsedRunningTime())}</b>
-        </span>
-        <span className="mrl">
-          Average: <b>{toSeconds(getAverage())}</b>
-        </span>
-        <span className="mrl">
-          Total time: <b>{toSeconds(pastSets.reduce((acc, cur) => acc + cur.time, 0))}</b>
-        </span>
-      </div>
-
-      <div className="fdr fww">
-        {pastSets.map((it) => (
-          <div
-            key={it.cardA + it.cardB + it.cardC}
-            className="fdr fac fjc mts mrs prd"
-            style={{
-              borderRadius: "1rem",
-              height: "1.5rem",
-              backgroundColor: it.result === "SUCCESS" ? "green" : "#B22222",
-            }}
-          >
-            <div className="mts mrxs">
-              {it.result === "SUCCESS" ? <CheckCircleIcon /> : <CancelIcon />}
-            </div>
-            <div>{toSeconds(it.time)}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="align-center mtl">
-        <div className="text-l">Wins: {wins}</div>
-        <div className="text-l">Losses: {losses}</div>
-        {currentCards.length === 0 && (
-          <div className="mtl">
-            <Button onClick={playAgain} variant="contained" color="primary">
-              Play again
-            </Button>
-          </div>
-        )}
-      </div>
+      <TimerRow pastSets={pastSets} stopwatch={stopwatch} />
+      <PastSetsPills pastSets={pastSets} />
+      <Score
+        currentCards={currentCards}
+        wins={wins}
+        losses={losses}
+        playAgainCallback={playAgain}
+      />
     </div>
   );
 };
