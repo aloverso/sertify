@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
-import React, { ReactElement, useCallback, useEffect, useState } from "react";
+import React, { ReactElement, useEffect, useState } from "react";
 import { Button, useMediaQuery } from "@material-ui/core";
 import { MediaQueries } from "../lib/MediaQueries";
 import { checkSet, conjugateCard, generateDeck } from "../lib/set-helpers";
@@ -13,8 +13,8 @@ import { TimerRow } from "../components/TimerRow";
 import { PastSetsPills } from "../components/PastSetsPills";
 import { SolutionAlert } from "../components/SolutionAlert";
 import { Score } from "../components/Score";
-import {PastSet} from "../lib/types";
-import {StartPlayingButton} from "../components/StartPlayingButton";
+import { PastSet } from "../lib/types";
+import { StartPlayingButton } from "../components/StartPlayingButton";
 
 const Index = (): ReactElement => {
   const [deck, setDeck] = useState<string[]>(generateDeck());
@@ -34,16 +34,26 @@ const Index = (): ReactElement => {
 
   const cardWidth = getCardWidth(isLarge, isXS, isXXS);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    setNextThreeCards(0);
+    document.addEventListener("keydown", handleKeyDown);
+    return (): void => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
     const timeout = setTimeout(() => setRenderTime(new Date().getTime()), 50);
     return (): void => {
       clearTimeout(timeout);
     };
   });
 
-  const next = useCallback((): void => {
+  const next = (): void => {
     if (index + 3 < deck.length) {
-      setIndex(index + 3);
+      const newIndex = index + 3;
+      setIndex(newIndex);
+      setNextThreeCards(newIndex);
       stopwatch.start();
     } else {
       setCurrentCards([]);
@@ -53,53 +63,50 @@ const Index = (): ReactElement => {
       setAlertState("NONE");
       // document.body.style = 'background-color: #1c2833;';
     }, 500);
-  }, [setIndex, setCurrentCards, setAlertState, deck.length, index]);
+  };
 
-  const testSet = useCallback(
-    (acceptRejectModifier: number): void => {
-      if (currentCards.length === 0) return;
-      setAlertState("NONE");
-      const time = stopwatch.getElapsedRunningTime();
-      stopwatch.stop();
+  const testSet = (acceptRejectModifier: number): void => {
+    if (currentCards.length === 0) return;
+    setAlertState("NONE");
+    const time = stopwatch.getElapsedRunningTime();
+    stopwatch.stop();
 
-      if (
-        acceptRejectModifier *
-          (checkSet(currentCards[0], currentCards[1], currentCards[2]) ? 1 : -1) >
-        0
-      ) {
-        setWins(wins + 1);
-        setAlertState("SUCCESS");
-        // document.body.style = 'background-color: green;';
-        setPastSets((prev) => [
-          ...prev,
-          {
-            cardA: currentCards[0],
-            cardB: currentCards[1],
-            cardC: currentCards[2],
-            result: "SUCCESS",
-            time: time,
-          },
-        ]);
-      } else {
-        setLosses(losses + 1);
-        setAlertState("FAIL");
-        // document.body.style = 'background-color: #B22222;';
-        setPastSets((prev) => [
-          ...prev,
-          {
-            cardA: currentCards[0],
-            cardB: currentCards[1],
-            cardC: currentCards[2],
-            result: "FAIL",
-            time: time,
-          },
-        ]);
-      }
+    if (
+      acceptRejectModifier *
+        (checkSet(currentCards[0], currentCards[1], currentCards[2]) ? 1 : -1) >
+      0
+    ) {
+      setWins(wins + 1);
+      setAlertState("SUCCESS");
+      // document.body.style = 'background-color: green;';
+      setPastSets((prev) => [
+        ...prev,
+        {
+          cardA: currentCards[0],
+          cardB: currentCards[1],
+          cardC: currentCards[2],
+          result: "SUCCESS",
+          time: time,
+        },
+      ]);
+    } else {
+      setLosses(losses + 1);
+      setAlertState("FAIL");
+      // document.body.style = 'background-color: #B22222;';
+      setPastSets((prev) => [
+        ...prev,
+        {
+          cardA: currentCards[0],
+          cardB: currentCards[1],
+          cardC: currentCards[2],
+          result: "FAIL",
+          time: time,
+        },
+      ]);
+    }
 
-      next();
-    },
-    [currentCards, setAlertState, setWins, setLosses, next, losses, wins]
-  );
+    next();
+  };
 
   const playAgain = (): void => {
     setWins(0);
@@ -111,37 +118,29 @@ const Index = (): ReactElement => {
     setDeck(generateDeck());
   };
 
-  useEffect(() => {
+  const setNextThreeCards = (newIndex: number): void => {
     const shouldBeSet = Math.round(Math.random()) === 0;
-    let thirdCard = conjugateCard(deck[index], deck[index + 1]);
+    let thirdCard = conjugateCard(deck[newIndex], deck[newIndex + 1]);
     if (!shouldBeSet) {
-      thirdCard = deck[index + 2];
+      thirdCard = deck[newIndex + 2];
     }
-    setCurrentCards([deck[index], deck[index + 1], thirdCard]);
-  }, [index, setCurrentCards, deck]);
+    setCurrentCards([deck[newIndex], deck[newIndex + 1], thirdCard]);
+  };
 
   const startGame = (): void => {
-    setStarted(true)
+    setStarted(true);
     stopwatch.start();
-  }
+  };
 
-  const handleKeyDown = useCallback(
-    (keyEvent: KeyboardEvent): void => {
+  const handleKeyDown = (keyEvent: KeyboardEvent): void => {
+    if (started) {
       if (keyEvent.code === "KeyA") {
         testSet(1);
       } else if (keyEvent.code === "KeyD") {
         testSet(-1);
       }
-    },
-    [testSet]
-  );
-
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown);
-    return (): void => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [handleKeyDown]);
+    }
+  };
 
   return (
     <div className="container ptm bg pbxl">
@@ -161,21 +160,31 @@ const Index = (): ReactElement => {
       {currentCards.length > 0 && (
         <>
           <div className="fdr fjc">
-            <SetCard width={cardWidth} value={currentCards[0]} blank={!started ? 'A' : undefined}/>
-            <SetCard width={cardWidth} value={currentCards[1]} blank={!started ? 'B' : undefined}/>
-            <SetCard width={cardWidth} value={currentCards[2]} blank={!started ? 'C' : undefined}/>
+            <SetCard width={cardWidth} value={currentCards[0]} blank={!started ? "A" : undefined} />
+            <SetCard width={cardWidth} value={currentCards[1]} blank={!started ? "B" : undefined} />
+            <SetCard width={cardWidth} value={currentCards[2]} blank={!started ? "C" : undefined} />
           </div>
 
           <div className={`${isXS ? "" : "mhxl"} mtl fdr fjc`}>
             <div className="mrd">
-              <Button disabled={!started} variant="contained" color="primary" onClick={(): void => testSet(1)}>
+              <Button
+                disabled={!started}
+                variant="contained"
+                color="primary"
+                onClick={(): void => testSet(1)}
+              >
                 <CheckCircleIcon className="mrs" />
                 it's a set
               </Button>
               <div className="align-center">(press A)</div>
             </div>
             <div className="mld">
-              <Button disabled={!started} variant="contained" color="secondary" onClick={(): void => testSet(-1)}>
+              <Button
+                disabled={!started}
+                variant="contained"
+                color="secondary"
+                onClick={(): void => testSet(-1)}
+              >
                 <CancelIcon className="mrs" />
                 not a set
               </Button>
@@ -183,7 +192,7 @@ const Index = (): ReactElement => {
             </div>
           </div>
 
-          <StartPlayingButton started={started} startGameCallback={startGame}/>
+          <StartPlayingButton started={started} startGameCallback={startGame} />
 
           <SolutionAlert alertState={alertState} />
         </>

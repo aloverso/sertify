@@ -21,7 +21,7 @@ export const PastSetsPills = (props: Props): ReactElement => {
             backgroundColor: it.result === "SUCCESS" ? "green" : "#B22222",
           }}
         >
-          <div className="mts mrxs">
+          <div className="mrxs" style={{ marginTop: "0.4rem" }}>
             {it.result === "SUCCESS" ? <CheckCircleIcon /> : <CancelIcon />}
           </div>
           <div>{toSeconds(it.time)}</div>

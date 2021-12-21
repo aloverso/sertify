@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
-import React, { ReactElement, useCallback, useEffect, useState } from "react";
+import React, { ReactElement, useEffect, useState } from "react";
 import { useMediaQuery } from "@material-ui/core";
 import { MediaQueries } from "../lib/MediaQueries";
 import { conjugateCard, generateDeck, shuffle } from "../lib/set-helpers";
@@ -14,7 +14,7 @@ import { PastSetsPills } from "../components/PastSetsPills";
 import { Score } from "../components/Score";
 import { SolutionAlert } from "../components/SolutionAlert";
 import { HardModeToggle } from "../components/HardModeToggle";
-import {StartPlayingButton} from "../components/StartPlayingButton";
+import { StartPlayingButton } from "../components/StartPlayingButton";
 
 const Guesser = (): ReactElement => {
   const [deck, setDeck] = useState<string[]>(generateDeck());
@@ -37,57 +37,54 @@ const Guesser = (): ReactElement => {
 
   const cardWidth = getCardWidth(isLarge, isXS, isXXS);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const timeout = setTimeout(() => setRenderTime(new Date().getTime()), 50);
     return (): void => {
       clearTimeout(timeout);
     };
   });
 
-  const getRandomCardHardMode = useCallback(
-    (thirdCard: string, existing?: string): string => {
-      const randomProperty = Math.floor(Math.random() * 4);
-      const randomUpOrDown = Math.round(Math.random()) ? -1 : 0;
+  useEffect(() => {
+    setNextThreeCards(0);
+  }, []);
 
-      let newChar = parseInt(thirdCard.charAt(randomProperty)) + randomUpOrDown;
-      if (newChar < 0) newChar = 2;
-      if (newChar > 2) newChar = 0;
-      const newCard = replaceAt(thirdCard, randomProperty, newChar + "");
+  const getRandomCardHardMode = (thirdCard: string, existing?: string): string => {
+    const randomProperty = Math.floor(Math.random() * 4);
+    const randomUpOrDown = Math.round(Math.random()) ? -1 : 0;
 
-      if (
-        currentCards.includes(newCard) ||
-        newCard === thirdCard ||
-        (existing && existing === newCard)
-      ) {
-        return getRandomCardHardMode(thirdCard, existing);
-      }
-      setRandomCards((prev) => [...prev, newCard]);
-      return newCard;
-    },
-    [currentCards, deck]
-  );
+    let newChar = parseInt(thirdCard.charAt(randomProperty)) + randomUpOrDown;
+    if (newChar < 0) newChar = 2;
+    if (newChar > 2) newChar = 0;
+    const newCard = replaceAt(thirdCard, randomProperty, newChar + "");
 
-  const getRandomCard = useCallback(
-    (thirdCard: string, existing?: string): string => {
-      if (hardMode) {
-        return getRandomCardHardMode(thirdCard, existing);
-      }
+    if (
+      currentCards.includes(newCard) ||
+      newCard === thirdCard ||
+      (existing && existing === newCard)
+    ) {
+      return getRandomCardHardMode(thirdCard, existing);
+    }
+    setRandomCards((prev) => [...prev, newCard]);
+    return newCard;
+  };
 
-      const randomIndex = Math.floor(Math.random() * deck.length);
-      if (
-        currentCards.includes(deck[randomIndex]) ||
-        (existing && existing === deck[randomIndex])
-      ) {
-        return getRandomCard(thirdCard, existing);
-      }
-      return deck[randomIndex];
-    },
-    [currentCards, deck]
-  );
+  const getRandomCard = (thirdCard: string, existing?: string): string => {
+    if (hardMode) {
+      return getRandomCardHardMode(thirdCard, existing);
+    }
 
-  const next = useCallback((): void => {
+    const randomIndex = Math.floor(Math.random() * deck.length);
+    if (currentCards.includes(deck[randomIndex]) || (existing && existing === deck[randomIndex])) {
+      return getRandomCard(thirdCard, existing);
+    }
+    return deck[randomIndex];
+  };
+
+  const next = (): void => {
     if (index + 3 < deck.length) {
-      setIndex(index + 3);
+      const newIndex = index + 3;
+      setIndex(newIndex);
+      setNextThreeCards(newIndex);
       stopwatch.start();
     } else {
       setCurrentCards([]);
@@ -96,47 +93,44 @@ const Guesser = (): ReactElement => {
     setTimeout(() => {
       setAlertState("NONE");
     }, 500);
-  }, [setIndex, setCurrentCards, setAlertState, deck.length, index]);
+  };
 
-  const testSet = useCallback(
-    (card: string): void => {
-      if (currentCards.length === 0) return;
-      setAlertState("NONE");
-      const time = stopwatch.getElapsedRunningTime();
-      stopwatch.stop();
+  const testSet = (card: string): void => {
+    if (currentCards.length === 0) return;
+    setAlertState("NONE");
+    const time = stopwatch.getElapsedRunningTime();
+    stopwatch.stop();
 
-      if (currentCards[2] === card) {
-        setWins(wins + 1);
-        setAlertState("SUCCESS");
-        setPastSets((prev) => [
-          ...prev,
-          {
-            cardA: currentCards[0],
-            cardB: currentCards[1],
-            cardC: currentCards[2],
-            result: "SUCCESS",
-            time: time,
-          },
-        ]);
-      } else {
-        setLosses(losses + 1);
-        setAlertState("FAIL");
-        setPastSets((prev) => [
-          ...prev,
-          {
-            cardA: currentCards[0],
-            cardB: currentCards[1],
-            cardC: currentCards[2],
-            result: "FAIL",
-            time: time,
-          },
-        ]);
-      }
+    if (currentCards[2] === card) {
+      setWins(wins + 1);
+      setAlertState("SUCCESS");
+      setPastSets((prev) => [
+        ...prev,
+        {
+          cardA: currentCards[0],
+          cardB: currentCards[1],
+          cardC: currentCards[2],
+          result: "SUCCESS",
+          time: time,
+        },
+      ]);
+    } else {
+      setLosses(losses + 1);
+      setAlertState("FAIL");
+      setPastSets((prev) => [
+        ...prev,
+        {
+          cardA: currentCards[0],
+          cardB: currentCards[1],
+          cardC: currentCards[2],
+          result: "FAIL",
+          time: time,
+        },
+      ]);
+    }
 
-      next();
-    },
-    [currentCards, setAlertState, setWins, setLosses, next, losses, wins]
-  );
+    next();
+  };
 
   const playAgain = (): void => {
     setWins(0);
@@ -147,21 +141,21 @@ const Guesser = (): ReactElement => {
     setDeck(generateDeck());
   };
 
-  useEffect(() => {
-    const thirdCard = conjugateCard(deck[index], deck[index + 1]);
-    setCurrentCards([deck[index], deck[index + 1], thirdCard]);
+  const setNextThreeCards = (newIndex: number): void => {
+    const thirdCard = conjugateCard(deck[newIndex], deck[newIndex + 1]);
+    setCurrentCards([deck[newIndex], deck[newIndex + 1], thirdCard]);
     const card1 = getRandomCard(thirdCard);
     const card2 = getRandomCard(thirdCard, card1);
     setRandomCards(shuffle([thirdCard, card1, card2]));
-  }, [index, setCurrentCards, deck]);
+  };
 
   const startGame = (): void => {
-    setStarted(true)
+    setStarted(true);
     stopwatch.start();
-  }
+  };
 
-  const handleKeyDown = useCallback(
-    (keyEvent: KeyboardEvent): void => {
+  const handleKeyDown = (keyEvent: KeyboardEvent): void => {
+    if (started) {
       if (keyEvent.code === "KeyA") {
         testSet(randomCards[0]);
       } else if (keyEvent.code === "KeyS") {
@@ -169,9 +163,8 @@ const Guesser = (): ReactElement => {
       } else if (keyEvent.code === "KeyD") {
         testSet(randomCards[2]);
       }
-    },
-    [testSet, randomCards]
-  );
+    }
+  };
 
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
@@ -199,9 +192,9 @@ const Guesser = (): ReactElement => {
       {currentCards.length > 0 && (
         <>
           <div className="fdr fjc fac">
-            <SetCard width={cardWidth} value={currentCards[0]} blank={!started ? '1' : undefined}/>
-            <SetCard width={cardWidth} value={currentCards[1]} blank={!started ? '2' : undefined}/>
-            <SetCard width={cardWidth} value={currentCards[1]} blank={'?'} />
+            <SetCard width={cardWidth} value={currentCards[0]} blank={!started ? "1" : undefined} />
+            <SetCard width={cardWidth} value={currentCards[1]} blank={!started ? "2" : undefined} />
+            <SetCard width={cardWidth} value={currentCards[1]} blank={"?"} />
           </div>
 
           <hr />
@@ -212,8 +205,8 @@ const Guesser = (): ReactElement => {
               <SetCard
                 width={cardWidth}
                 value={randomCards[0]}
-                onClick={(): void => started ? testSet(randomCards[0]) : undefined}
-                blank={!started ? 'A' : undefined}
+                onClick={(): void => (started ? testSet(randomCards[0]) : undefined)}
+                blank={!started ? "A" : undefined}
               />
               <div className="align-center">(press A)</div>
             </div>
@@ -221,8 +214,8 @@ const Guesser = (): ReactElement => {
               <SetCard
                 width={cardWidth}
                 value={randomCards[1]}
-                onClick={(): void => started ? testSet(randomCards[1]) : undefined}
-                blank={!started ? 'S' : undefined}
+                onClick={(): void => (started ? testSet(randomCards[1]) : undefined)}
+                blank={!started ? "S" : undefined}
               />
               <div className="align-center">(press S)</div>
             </div>
@@ -230,14 +223,14 @@ const Guesser = (): ReactElement => {
               <SetCard
                 width={cardWidth}
                 value={randomCards[2]}
-                onClick={(): void => started ? testSet(randomCards[2]) : undefined}
-                blank={!started ? 'D' : undefined}
+                onClick={(): void => (started ? testSet(randomCards[2]) : undefined)}
+                blank={!started ? "D" : undefined}
               />
               <div className="align-center">(press D)</div>
             </div>
           </div>
 
-          <StartPlayingButton started={started} startGameCallback={startGame}/>
+          <StartPlayingButton started={started} startGameCallback={startGame} />
 
           <SolutionAlert alertState={alertState} />
         </>
