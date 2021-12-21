@@ -36,10 +36,6 @@ const Index = (): ReactElement => {
 
   useEffect(() => {
     setNextThreeCards(0);
-    document.addEventListener("keydown", handleKeyDown);
-    return (): void => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
   }, []);
 
   useEffect(() => {
@@ -141,6 +137,13 @@ const Index = (): ReactElement => {
       }
     }
   };
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return (): void => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   return (
     <div className="container ptm bg pbxl">
