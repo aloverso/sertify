@@ -139,6 +139,8 @@ const Guesser = (): ReactElement => {
     setIndex(0);
     setPastSets([]);
     setDeck(generateDeck());
+    setNextThreeCards(0);
+    startGame();
   };
 
   const setNextThreeCards = (newIndex: number): void => {
