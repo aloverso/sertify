@@ -6,12 +6,21 @@ $tomato: tomato;
 $lightsteel: #b0c4de;
 
 $primary: #4252ae;
+$red: #b22222;
 
 .text-white {
   color: $white;
 }
 
-.text-green {
+.text-primary {
+  color: $primary;
+}
+
+.text-red {
+  color: $red;
+}
+
+.text-bright {
   color: #00bfff;
 }
 

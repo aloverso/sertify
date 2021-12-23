@@ -15,6 +15,8 @@ import { Score } from "../components/Score";
 import { SolutionAlert } from "../components/SolutionAlert";
 import { HardModeToggle } from "../components/HardModeToggle";
 import { StartPlayingButton } from "../components/StartPlayingButton";
+import { StorageClient } from "../lib/StorageClient";
+import dayjs from "dayjs";
 
 const Guesser = (): ReactElement => {
   const [deck, setDeck] = useState<string[]>(generateDeck());
@@ -88,6 +90,12 @@ const Guesser = (): ReactElement => {
       stopwatch.start();
     } else {
       setCurrentCards([]);
+      StorageClient.saveScore({
+        sets: pastSets,
+        timestamp: dayjs().toISOString(),
+        type: "GUESSER",
+        hardMode: hardMode,
+      });
     }
 
     setTimeout(() => {
@@ -178,6 +186,9 @@ const Guesser = (): ReactElement => {
   return (
     <div className="container ptm bg pbxl">
       <div className="row mts">
+        <a className="pull-right phs" href="/history">
+          game history
+        </a>
         <a className="pull-right phs" href="/">
           sertify game
         </a>

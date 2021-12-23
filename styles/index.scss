@@ -117,3 +117,30 @@ tr {
   background-color: rgba(255, 255, 255, 0.1) !important;
   color: #8e9499 !important;
 }
+
+.MuiAlert-filledError {
+  background-color: $red !important;
+}
+
+.MuiAlert-filledSuccess {
+  background-color: $primary !important;
+}
+
+.diamond {
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  border-bottom: 9px solid white;
+  position: relative;
+  top: -9px;
+}
+.diamond:after {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 9px;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  border-top: 9px solid white;
+}

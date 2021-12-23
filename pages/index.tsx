@@ -15,6 +15,8 @@ import { SolutionAlert } from "../components/SolutionAlert";
 import { Score } from "../components/Score";
 import { PastSet } from "../lib/types";
 import { StartPlayingButton } from "../components/StartPlayingButton";
+import { StorageClient } from "../lib/StorageClient";
+import dayjs from "dayjs";
 
 const Index = (): ReactElement => {
   const [deck, setDeck] = useState<string[]>(generateDeck());
@@ -53,6 +55,12 @@ const Index = (): ReactElement => {
       stopwatch.start();
     } else {
       setCurrentCards([]);
+      StorageClient.saveScore({
+        sets: pastSets,
+        timestamp: dayjs().toISOString(),
+        type: "SERTIFY",
+        hardMode: false,
+      });
     }
 
     setTimeout(() => {
@@ -150,6 +158,9 @@ const Index = (): ReactElement => {
   return (
     <div className="container ptm bg pbxl">
       <div className="row mts">
+        <a className="pull-right phs" href="/history">
+          game history
+        </a>
         <a className="pull-right phs" href="/guesser">
           guess the third game
         </a>
