@@ -25,3 +25,7 @@ export const yearMonthDayFormat = (timestamp: string): string => {
 
 export const PRIMARY = "#4252ae";
 export const RED = "#B22222";
+export const BRIGHT = "#00bfff";
+export const TOMATO = "#ff6347";
+export const BRIGHT_DARK = "#008AB8";
+export const TOMATO_DARK = "#e75a40";

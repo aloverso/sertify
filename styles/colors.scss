@@ -1,8 +1,9 @@
 $white: #f8f8ff;
 $bg: #1c2833;
-$bright-green: #c8f200;
-$dull-green: #818c26;
 $tomato: tomato;
+$tomato-dark: #e75a40;
+$bright: #00bfff;
+$bright-dark: #008ab8;
 $lightsteel: #b0c4de;
 
 $primary: #4252ae;
@@ -26,4 +27,12 @@ $red: #b22222;
 
 .text-tomato {
   color: tomato;
+}
+
+.bg-bright {
+  background-color: #008ab8;
+}
+
+.bg-tomato {
+  background-color: tomato;
 }
